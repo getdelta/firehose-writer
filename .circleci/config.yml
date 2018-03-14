@@ -1,0 +1,15 @@
+version: 2
+jobs:
+  build:
+    working_directory: /tmp/firehose-writer
+    docker:
+      - image: node:9
+    steps:
+      - checkout
+      - restore_cache:
+          key: firehose-writer-{{ checksum "package.json" }}
+      - run: npm install && npm test
+      - save_cache:
+          key: firehose-writer-{{ checksum "package.json" }}
+          paths:
+            - node_modules
