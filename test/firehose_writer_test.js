@@ -1,14 +1,24 @@
 const Writer = require('../lib/firehose_writer')
 const { Firehose } = require('aws-sdk')
+const sinon = require('sinon')
 
 describe('FirehoseWriter', function() {
+  function newWriter(options, stubDeliverMethod = true) {
+    const defaults = { streamName: 'test' }
+    const writer = new Writer({...defaults, ...options})
+
+    if (stubDeliverMethod) sinon.stub(writer, '_deliver')
+
+    return writer
+  }
+
   describe('constructor', function() {
     it('requires streamName', function() {
       expect(() => new Writer()).to.throw(Error, /streamName.*be specified/)
     })
 
     it('configures defaults', function() {
-      const writer = new Writer({ streamName: 'something' })
+      const writer = newWriter()
       expect(writer.maxSize).to.eql(1)
       expect(writer.maxCount).to.eql(500)
       expect(writer.maxTimeout).to.eql(10000)
@@ -21,7 +31,7 @@ describe('FirehoseWriter', function() {
     })
 
     it('applies provided options', function() {
-      const writer = new Writer({
+      const writer = newWriter({
         streamName: 'someStream',
         firehoseClient: 'hello',
         maxCount: 1,
@@ -42,16 +52,15 @@ describe('FirehoseWriter', function() {
     })
 
     it('initializes the buffer', function() {
-      expect(new Writer({ streamName: 'test' })._buffer).to.eql([])
+      expect(newWriter()._buffer).to.eql([])
     })
   })
 
   describe('put', function() {
     let writer
     beforeEach(function () {
-      writer = new Writer({ streamName: 'test', maxSize: .001, maxCount: 100 })
+      writer = newWriter({ maxSize: .001, maxCount: 100 })
       this.sinon.spy(writer, '_flush')
-      // writer._flush = this.sinon.spy()
     })
 
     it('adds a record to the buffer', function() {
@@ -96,7 +105,7 @@ describe('FirehoseWriter', function() {
   describe('_flush', function() {
     let writer
     beforeEach(function() {
-      writer = new Writer({ streamName: 'test', maxSize: 1, maxCount: 3 })
+      writer = newWriter({ maxSize: 1, maxCount: 3 })
 
       writer.put({ a: 1 })
       writer.put({ b: 2 })
@@ -117,7 +126,7 @@ describe('FirehoseWriter', function() {
 
   describe('_splitIntoChunks', function() {
     // maxSize: 1000 bytes
-    let writer = new Writer({ streamName: 'test', maxBatchSize: 0.001, maxBatchCount: 3 })
+    let writer = newWriter({ maxBatchSize: 0.001, maxBatchCount: 3 })
 
     const SMALL_RECORD = Buffer.from('a', 'utf8')   // size: 1
     const MEDIUM_RECORD = Buffer.from('a'.repeat(500), 'utf-8')
