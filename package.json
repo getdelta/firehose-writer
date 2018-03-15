@@ -1,7 +1,7 @@
 {
   "name": "firehose-writer",
   "license": "MIT",
-  "version": "0.1.10-0",
+  "version": "0.1.11-0",
   "scripts": {
     "test": "node_modules/mocha/bin/mocha"
   },
