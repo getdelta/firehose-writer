@@ -29,9 +29,8 @@ jobs:
     docker:
       - image: node:9
     steps:
-      - publish:
-          name: Publish package to NPM
-          command: npm publish
+      - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+      - run: npm publish
 workflows:
   version: 2
   ci:
@@ -42,4 +41,3 @@ workflows:
             tags:
               only: /v[0-9]+(\.[0-9]+)*/
           requires: build
-
