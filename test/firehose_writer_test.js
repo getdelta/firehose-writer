@@ -60,6 +60,23 @@ describe('FirehoseWriter', function() {
     })
   })
 
+  describe('flush on timeout', function() {
+    beforeEach(function() { this.clock = sinon.useFakeTimers() })
+    afterEach(function() { this.clock.restore() })
+
+    it('flushes records on timeout', function() {
+      // 60 seconds flush timeout
+      const writer = newWriter({ maxTimeout: 60000 })
+
+      this.sinon.spy(writer, '_flush')
+      expect(writer._flush).to.not.have.been.called
+      this.clock.tick(59000)
+      expect(writer._flush).to.not.have.been.called
+      this.clock.tick(10000)
+      expect(writer._flush).to.have.been.called
+    })
+  })
+
   describe('put', function() {
     let writer
     beforeEach(function () {
@@ -119,6 +136,12 @@ describe('FirehoseWriter', function() {
 
     it('returns a promise', function() {
       expect(writer._flush()).to.be.instanceOf(Promise)
+    })
+
+    it('does nothing if no records in the buffer', function() {
+      const writer = newWriter()
+      writer._flush()
+      expect(writer._deliver).to.not.have.been.called
     })
 
     it('resets all counters and buffer', function() {
