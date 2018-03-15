@@ -25,3 +25,19 @@ jobs:
       - store_artifacts:
           path: /tmp/firehose-writer/coverage/lcov-report
           destination: coverage
+  publish:
+    docker:
+      - image: node:9
+    steps:
+      - publish:
+          name: Publish package to NPM
+          command: npm publish
+workflows:
+  version: 2
+  ci:
+    jobs:
+      - build
+      - publish:
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
