@@ -8,7 +8,7 @@ const HUGE_RECORD = Buffer.from('a'.repeat(1000000), 'utf-8')
 
 describe('FirehoseWriter', function() {
   function newWriter(options, stubDeliverMethod = true) {
-    const defaults = { streamName: 'test' }
+    const defaults = { streamName: 'test', log: () => {} }
     const writer = new Writer({...defaults, ...options})
 
     if (stubDeliverMethod) sinon.stub(writer, '_deliver')
@@ -19,6 +19,13 @@ describe('FirehoseWriter', function() {
   describe('constructor', function() {
     it('requires streamName', function() {
       expect(() => new Writer()).to.throw(Error, /streamName.*be specified/)
+    })
+
+    it('logs to console by default', function() {
+      const writer = newWriter({ log: null })
+      this.sinon.spy(console, 'log')
+      writer.log('debug', 'hello', { a: 1 })
+      expect(console.log).to.have.been.calledWith('debug: hello', { a: 1 })
     })
 
     it('configures defaults', function() {
