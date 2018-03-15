@@ -23,15 +23,29 @@ describe('FirehoseWriter', function() {
 
     it('configures defaults', function() {
       const writer = newWriter()
-      expect(writer.maxSize).to.eql(1)
+      expect(writer.maxSize).to.eql(100000000)
       expect(writer.maxCount).to.eql(500)
       expect(writer.maxTimeout).to.eql(10000)
 
       expect(writer.maxBatchCount).to.eql(500)
-      expect(writer.maxBatchSize).to.eql(1)
+      expect(writer.maxBatchSize).to.eql(512000000)
 
       expect(writer.firehoseClient).to.be.instanceOf(Firehose)
       expect(writer.maxRetries).to.eql(10)
+    })
+
+    it('fails if maxSize is greater than allowed by AWS', function() {
+      expect(() => newWriter({ maxBatchSize: 512000001 }))
+        .to.throw(Error, 'maxBatchSize should be at most 512000000')
+
+      expect(() => newWriter({ maxSize: 512000001 }))
+        .to.throw(Error, 'maxSize should be at most 512000000')
+
+      expect(() => newWriter({ maxBatchCount: 501 }))
+        .to.throw(Error, 'maxBatchCount should be at most 500')
+
+      expect(() => newWriter({ maxCount: 501 }))
+        .to.throw(Error, 'maxCount should be at most 500')
     })
 
     it('applies provided options', function() {
@@ -80,8 +94,13 @@ describe('FirehoseWriter', function() {
   describe('put', function() {
     let writer
     beforeEach(function () {
-      writer = newWriter({ maxSize: .001, maxCount: 100 })
+      writer = newWriter({ maxSize: 1000, maxCount: 100 })
       this.sinon.spy(writer, '_flush')
+    })
+
+    it('fails on record bigger than maxSize', function() {
+      expect(() => writer.put({ a: 'a'.repeat(10000) }))
+        .to.throw(/Record bigger then max size \(1000\)/)
     })
 
     it('adds a record to the buffer', function() {
@@ -126,7 +145,7 @@ describe('FirehoseWriter', function() {
   describe('_flush', function() {
     let writer
     beforeEach(function() {
-      writer = newWriter({ maxSize: 1, maxCount: 3 })
+      writer = newWriter({ maxSize: 1024000, maxCount: 3 })
 
       writer.put({ a: 1 })
       writer.put({ b: 2 })
@@ -153,7 +172,7 @@ describe('FirehoseWriter', function() {
 
   describe('_splitIntoChunks', function() {
     // maxSize: 1000 bytes
-    let writer = newWriter({ maxBatchSize: 0.001, maxBatchCount: 3 })
+    let writer = newWriter({ maxBatchSize: 1000, maxBatchCount: 3 })
 
     function bufferOf(record, times) {
       const buffer = []
@@ -228,9 +247,16 @@ describe('FirehoseWriter', function() {
       )
     })
 
+    it('non-retryable failures are not retried', async function() {
+      putRecordBatchStub = this.sinon.stub().callsFake((_, cb) => cb({ retryable: false }))
+
+      await writer._deliver(records)
+      expect(putRecordBatchStub).calledOnce
+    })
+
     it('redelivers batch on general failure', async function() {
       writer.retryInterval = 20
-      putRecordBatchStub = this.sinon.stub().callsFake((_, cb) => cb(new Error('Delivery error')))
+      putRecordBatchStub = this.sinon.stub().callsFake((_, cb) => cb({ retryable: true, msg: 'Delivery error'}))
 
       const start = Date.now()
       await expect(writer._deliver(records)).to.be.rejectedWith(/Failed to deliver a batch of 2 to firehose stream test \(10 retries\)/)
