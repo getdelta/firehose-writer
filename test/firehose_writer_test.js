@@ -2,6 +2,10 @@ const Writer = require('../lib/firehose_writer')
 const { Firehose } = require('aws-sdk')
 const sinon = require('sinon')
 
+const SMALL_RECORD = Buffer.from('a', 'utf8')   // size: 1
+const MEDIUM_RECORD = Buffer.from('a'.repeat(500), 'utf-8')
+const HUGE_RECORD = Buffer.from('a'.repeat(1000000), 'utf-8')
+
 describe('FirehoseWriter', function() {
   function newWriter(options, stubDeliverMethod = true) {
     const defaults = { streamName: 'test' }
@@ -128,10 +132,6 @@ describe('FirehoseWriter', function() {
     // maxSize: 1000 bytes
     let writer = newWriter({ maxBatchSize: 0.001, maxBatchCount: 3 })
 
-    const SMALL_RECORD = Buffer.from('a', 'utf8')   // size: 1
-    const MEDIUM_RECORD = Buffer.from('a'.repeat(500), 'utf-8')
-    const HUGE_RECORD = Buffer.from('a'.repeat(1000000), 'utf-8')
-
     function bufferOf(record, times) {
       const buffer = []
       for (let i = 0; i < times; i++) buffer.push(record)
@@ -160,6 +160,62 @@ describe('FirehoseWriter', function() {
           { records: bufferOf(SMALL_RECORD, 1), size: 1 },
           { records: bufferOf(SMALL_RECORD, 3), size: 3 }
         ])
+    })
+  })
+
+  describe('_deliver', function() {
+    const AWSMock = require('aws-sdk-mock')
+    const records = [SMALL_RECORD, MEDIUM_RECORD]
+    let Firehose, writer, putRecordBatchStub = () => {}
+
+    beforeEach(function() {
+      AWSMock.setSDKInstance(require('aws-sdk'))
+      AWSMock.mock('Firehose', 'putRecordBatch', function(params, cb) {
+        putRecordBatchStub(...arguments)
+      })
+      Firehose = require('aws-sdk').Firehose
+      writer = newWriter({ firehoseClient: new Firehose() }, false)
+    })
+    afterEach(function() { AWSMock.restore() })
+
+    it('calls putRecordBatch', async function() {
+      putRecordBatchStub = this.sinon.stub().callsFake((params, cb) => {
+        cb(null, { RequestResponses: [] })
+      })
+
+      await writer._deliver(records)
+      expect(putRecordBatchStub).to.have.been.called
+    })
+
+    it('redelivers failed records', async function() {
+      writer.retryInterval = 10000
+
+      putRecordBatchStub = this.sinon.stub().callsFake((_, cb) => {
+        cb(null, { RequestResponses: [
+          { ErrorCode: 0 },
+          { ErrorCode: 1 }
+        ] })
+      })
+      const start = Date.now()
+      await writer._deliver(records)
+      expect(Date.now() - start).to.be
+        .lte(writer.retryInterval / 2, 'Record delivery failure should not wait retryInterval')
+      expect(putRecordBatchStub).to.have.been.calledWithMatch(
+        this.sinon.match((params) => params.Records.length === 1)
+      )
+    })
+
+    it('redelivers batch on general failure', async function() {
+      writer.retryInterval = 20
+      putRecordBatchStub = this.sinon.stub().callsFake((_, cb) => cb(new Error('Delivery error')))
+
+      const start = Date.now()
+      await expect(writer._deliver(records)).to.be.rejectedWith(/Failed to deliver a batch of 2 to firehose stream test \(10 retries\)/)
+      expect(Date.now() - start).to.be
+        .gte(writer.retryInterval * 10, 'General failure should wait for retryInterval')
+      expect(putRecordBatchStub).to.have.been.calledWithMatch(
+        this.sinon.match((params) => params.Records.length === 2)
+      ).callCount(11)
     })
   })
 })
