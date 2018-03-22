@@ -34,14 +34,14 @@ const writer = new FirehoseWriter({
 
   firehoseClient: ...,     // [Optional] override firehose client
 
-  maxTimeout: 10000        // Flush records after 10 seconds, default: 10 seconds
-  maxSize: 1               // Flush records after 1 Byte of data accumulated, default: 100 000 000
+  maxTimeout: 10000        // Flush records after 10 seconds, default: 10000ms (10 seconds)
+  maxSize: 1               // Flush records after 1 Byte of data accumulated, default: 4 000 000
   maxCount: 400            // Flush records after 400 records buffered, default: 500 records
 
   maxRetries: 10           // Max delivery attempts for failed records/batches, default: 10 retries
 
   maxBatchCount: 500       // Max size of the delivery batch (cannot exceed 500). Default: 500
-  maxBatchSize: 1          // Max batch size in MB (can not exceed 1Mb). Default: 512 000 000
+  maxBatchSize: 1000000    // Max batch size in bytes (can not exceed 4Mb). Default: 4 000 000
 })
 
 writer.put({ foo: 'bar' })
