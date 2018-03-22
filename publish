@@ -1,2 +1,0 @@
-#!env sh
-npm version $1 && git push origin --follow-tags
