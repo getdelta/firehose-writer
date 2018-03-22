@@ -30,23 +30,23 @@ describe('FirehoseWriter', function() {
 
     it('configures defaults', function() {
       const writer = newWriter()
-      expect(writer.maxSize).to.eql(100000000)
+      expect(writer.maxSize).to.eql(4000000)
       expect(writer.maxCount).to.eql(500)
       expect(writer.maxTimeout).to.eql(10000)
 
       expect(writer.maxBatchCount).to.eql(500)
-      expect(writer.maxBatchSize).to.eql(512000000)
+      expect(writer.maxBatchSize).to.eql(4000000)
 
       expect(writer.firehoseClient).to.be.instanceOf(Firehose)
       expect(writer.maxRetries).to.eql(10)
     })
 
     it('fails if maxSize is greater than allowed by AWS', function() {
-      expect(() => newWriter({ maxBatchSize: 512000001 }))
-        .to.throw(Error, 'maxBatchSize: should be at most 512000000')
+      expect(() => newWriter({ maxBatchSize: 4000001 }))
+        .to.throw(Error, 'maxBatchSize: should be at most 4000000')
 
-      expect(() => newWriter({ maxSize: 512000001 }))
-        .to.throw(Error, 'maxSize: should be at most 512000000')
+      expect(() => newWriter({ maxSize: 4000001 }))
+        .to.throw(Error, 'maxSize: should be at most 4000000')
 
       expect(() => newWriter({ maxBatchCount: 501 }))
         .to.throw(Error, 'maxBatchCount: should be at most 500')
