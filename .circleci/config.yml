@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: /tmp/firehose-writer
     docker:
-      - image: node:9
+      - image: shapigor/quadro
     steps:
       - checkout
       - restore_cache:
@@ -23,4 +23,3 @@ jobs:
           paths:
             - node_modules
       - run: ./release
-
