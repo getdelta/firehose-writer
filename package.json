@@ -2,7 +2,7 @@
   "name": "firehose-writer",
   "license": "MIT",
   "version": "0.2.0",
-  "repository": "github:WisePricer/firehose-writer",
+  "repository": "github:WiserSolutions/firehose-writer",
   "scripts": {
     "test": "node_modules/mocha/bin/mocha"
   },
