@@ -7,6 +7,10 @@ on:
       - develop
   pull_request:
 
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     name: Linting
