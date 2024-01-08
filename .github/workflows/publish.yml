@@ -1,0 +1,35 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          scope: "@getdelta"
+          registry-url: "https://npm.pkg.github.com/"
+          cache: "npm"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Install dependencies
+        run: npm install
+      - name: Build package
+        run: npm run build
+      - name: Publish package
+        run: npm publish
+        working-directory: dist
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

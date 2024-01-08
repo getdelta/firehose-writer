@@ -8,7 +8,6 @@
     "check:typescript": "tsc --noEmit --skipLibCheck --project .",
     "test": "node_modules/mocha/bin/mocha"
   },
-  "main": "lib/firehose_writer.js",
   "devDependencies": {
     "@types/node": "^20.10.7",
     "aws-sdk-mock": "^1.7.0",
