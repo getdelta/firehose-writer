@@ -13,7 +13,7 @@ Handles the following:
 # Install
 
 ```sh
-npm install firehose-writer
+npm install @getdelta/firehose-writer
 ```
 
 # Usage
