@@ -49,7 +49,7 @@ interface Options {
 }
 
 export default class FirehoseWriter {
-  private streamName: string;
+  private streamName?: string;
   private firehoseClient: Firehose;
   private log: any;
   private maxSize: number;
@@ -62,22 +62,22 @@ export default class FirehoseWriter {
   private _buffer: any[];
   private _currentSize: number;
 
-  constructor(options: Options) {
+  constructor(options?: Options) {
     validateParam("options", !!options, "can not be `null` or `undefined`");
-    validateParam("streamName", !!options.streamName, "should be specified");
+    validateParam("streamName", !!options?.streamName, "should be specified");
 
-    this.streamName = options.streamName;
-    this.firehoseClient = options.firehoseClient || createClient();
-    this.log = options.log || defaultLog;
+    this.streamName = options?.streamName;
+    this.firehoseClient = options?.firehoseClient || createClient();
+    this.log = options?.log || defaultLog;
     this._buffer = [];
     this._currentSize = 0;
-    this.maxTimeout = options.maxTimeout || 10000;
-    this.maxSize = options.maxSize || AWS_MAX_BATCH_SIZE;
-    this.maxBatchCount = options.maxBatchCount || AWS_MAX_BATCH_RECORDS;
-    this.maxBatchSize = options.maxBatchSize || AWS_MAX_BATCH_SIZE;
-    this.retryInterval = options.retryInterval || 5000;
-    this.maxCount = options.maxCount || 500;
-    this.maxRetries = options.maxRetries || 10;
+    this.maxTimeout = options?.maxTimeout || 10000;
+    this.maxSize = options?.maxSize || AWS_MAX_BATCH_SIZE;
+    this.maxBatchCount = options?.maxBatchCount || AWS_MAX_BATCH_RECORDS;
+    this.maxBatchSize = options?.maxBatchSize || AWS_MAX_BATCH_SIZE;
+    this.retryInterval = options?.retryInterval || 5000;
+    this.maxCount = options?.maxCount || 500;
+    this.maxRetries = options?.maxRetries || 10;
 
     setInterval(() => this._flush(), this.maxTimeout).unref();
     process.on("beforeExit", () => this._flush());
