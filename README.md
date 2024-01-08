@@ -1,6 +1,6 @@
 # Firehose writer
 
-Provides a buffered queue abstraction for writing to AWS [Firehose](https://aws.amazon.com/kinesis/data-firehose/).
+Provides a buffered queue abstraction for writing to AWS [Firehose](https://aws.amazon.com/kinesis/data-firehose/). Based on the original implementation by [firehose-writer](https://github.com/WiserSolutions/firehose-writer) but adjusted to work with the new AWS SDK V3 Firehose client.
 
 Handles the following:
 
