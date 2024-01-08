@@ -18,10 +18,10 @@ jobs:
         uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
-          node-version: "20"
-          scope: "@getdelta"
-          registry-url: "https://npm.pkg.github.com/"
-          cache: "npm"
+          node-version: '20'
+          scope: '@getdelta'
+          registry-url: 'https://npm.pkg.github.com/'
+          cache: 'npm'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Install dependencies
