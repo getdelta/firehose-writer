@@ -1,9 +1,9 @@
 import {
   Firehose,
   PutRecordBatchCommandOutput,
-} from "@aws-sdk/client-firehose";
-import { NodeHttpHandler } from "@smithy/node-http-handler";
-import { Agent } from "https";
+} from '@aws-sdk/client-firehose';
+import { NodeHttpHandler } from '@smithy/node-http-handler';
+import { Agent } from 'https';
 
 const AWS_MAX_BATCH_RECORDS = 500;
 const AWS_MAX_BATCH_SIZE = 4 * 1000000;
@@ -14,7 +14,7 @@ function defaultLog(level: string, message: string, ...params: any[]) {
 
 function createClient() {
   return new Firehose({
-    region: "eu-west-1",
+    region: 'eu-west-1',
     requestHandler: new NodeHttpHandler({
       httpsAgent: new Agent({
         keepAlive: true,
@@ -63,8 +63,8 @@ export default class FirehoseWriter {
   public log: (level: string, message: string, ...params: any[]) => void;
 
   constructor(options: Options = {}) {
-    validateParam("options", !!options, "can not be `null` or `undefined`");
-    validateParam("streamName", !!options?.streamName, "should be specified");
+    validateParam('options', !!options, 'can not be `null` or `undefined`');
+    validateParam('streamName', !!options?.streamName, 'should be specified');
 
     this.streamName = options?.streamName;
     this.firehoseClient = options?.firehoseClient || createClient();
@@ -80,14 +80,14 @@ export default class FirehoseWriter {
     this.maxRetries = options?.maxRetries || 10;
 
     setInterval(() => this._flush(), this.maxTimeout).unref();
-    process.on("beforeExit", () => this._flush());
+    process.on('beforeExit', () => this._flush());
   }
 
   public put(record: Buffer | any) {
     const data =
       record instanceof Buffer
         ? record
-        : Buffer.from(JSON.stringify(record), "utf8");
+        : Buffer.from(JSON.stringify(record), 'utf8');
 
     const maxSizeBytes = this.maxSize;
     if (data.length > maxSizeBytes) {
@@ -118,14 +118,14 @@ export default class FirehoseWriter {
     this._currentSize = 0;
 
     return await Promise.all(
-      chunks.map((chunk) => this._deliver(chunk.records))
+      chunks.map((chunk) => this._deliver(chunk.records)),
     );
   }
 
   public async _deliver(records: Uint8Array[], retry = 0) {
     if (retry > this.maxRetries) {
       throw new Error(
-        `Failed to deliver a batch of ${records.length} to firehose stream ${this.streamName} (${this.maxRetries} retries)`
+        `Failed to deliver a batch of ${records.length} to firehose stream ${this.streamName} (${this.maxRetries} retries)`,
       );
     }
 
@@ -145,18 +145,18 @@ export default class FirehoseWriter {
   private async _handleGeneralFailure(
     originalRecords: Uint8Array[],
     err: any,
-    retry = 0
+    retry = 0,
   ) {
     const canRetry = !err || err.retryable;
 
-    this.log("error", "General failure in sending to firehose", {
+    this.log('error', 'General failure in sending to firehose', {
       err,
       canRetry,
     });
 
     if (canRetry) {
       return await delay(this.retryInterval).then(() =>
-        this._deliver(originalRecords, retry)
+        this._deliver(originalRecords, retry),
       );
     }
   }
@@ -164,7 +164,7 @@ export default class FirehoseWriter {
   private async _retryFailedRecords(
     originalRecords: Uint8Array[],
     response: PutRecordBatchCommandOutput,
-    retry = 0
+    retry = 0,
   ) {
     const failedRecords = response
       .RequestResponses!.map((x, i) => {
@@ -177,7 +177,7 @@ export default class FirehoseWriter {
       .filter((x): x is Uint8Array => Boolean(x));
 
     if (failedRecords && failedRecords.length) {
-      this.log("warn", "Retrying failed records", {
+      this.log('warn', 'Retrying failed records', {
         count: failedRecords.length,
       });
 
@@ -206,7 +206,7 @@ export default class FirehoseWriter {
 
         return acc;
       },
-      [{ records: [], size: 0 } as { records: Uint8Array[]; size: number }]
+      [{ records: [], size: 0 } as { records: Uint8Array[]; size: number }],
     );
   }
 }

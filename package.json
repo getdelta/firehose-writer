@@ -5,6 +5,8 @@
   "repository": "https://github.com/getdelta/firehose-writer",
   "scripts": {
     "build": "tsc",
+    "lint": "eslint --ext .ts,.js .",
+    "lint:fix": "eslint --ext .ts,.js --fix .",
     "check:typescript": "tsc --noEmit --skipLibCheck --project .",
     "test": "NODE_ENV=test mocha ./**/*.spec.ts"
   },
@@ -13,6 +15,7 @@
     "@smithy/node-http-handler": "^2.2.2"
   },
   "devDependencies": {
+    "@getdelta/eslint-config": "^1.0.0",
     "@types/node": "^20.10.7",
     "typescript": "^5.3.3"
   }

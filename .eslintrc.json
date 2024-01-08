@@ -1,0 +1,6 @@
+{
+  "extends": "@getdelta/eslint-config",
+  "env": {
+    "node": true
+  }
+}
