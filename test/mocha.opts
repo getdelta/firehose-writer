@@ -1,4 +1,0 @@
---colors
---recursive
-./test/init.js
-test/**/*.js

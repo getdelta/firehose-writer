@@ -3,6 +3,7 @@
 Provides a buffered queue abstraction for writing to AWS [Firehose](https://aws.amazon.com/kinesis/data-firehose/).
 
 Handles the following:
+
 - Buffering
   - by time
   - by size
@@ -18,7 +19,7 @@ npm install firehose-writer
 # Usage
 
 ```js
-const FirehoseWriter = require('firehose-writer')
+const FirehoseWriter = require('@getdelta/firehose-writer')
 
 const writer = new FirehoseWriter({
   streamName: 'some-stream'// Name of the delivery stream

@@ -62,7 +62,7 @@ export default class FirehoseWriter {
   public maxBatchSize: number;
   public log: (level: string, message: string, ...params: any[]) => void;
 
-  constructor(options?: Options) {
+  constructor(options: Options = {}) {
     validateParam("options", !!options, "can not be `null` or `undefined`");
     validateParam("streamName", !!options?.streamName, "should be specified");
 
