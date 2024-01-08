@@ -5,6 +5,7 @@
   "repository": "https://github.com/getdelta/firehose-writer",
   "scripts": {
     "build": "tsc",
+    "check:typescript": "tsc --noEmit --skipLibCheck --project .",
     "test": "node_modules/mocha/bin/mocha"
   },
   "main": "lib/firehose_writer.js",
