@@ -1,4 +1,9 @@
-import { Firehose } from "aws-sdk";
+import {
+  Firehose,
+  PutRecordBatchCommandOutput,
+} from "@aws-sdk/client-firehose";
+import { NodeHttpHandler } from "@smithy/node-http-handler";
+import { Agent } from "https";
 
 const AWS_MAX_BATCH_RECORDS = 500;
 const AWS_MAX_BATCH_SIZE = 4 * 1000000;
@@ -10,6 +15,11 @@ function defaultLog(level: string, message: string, ...params: any[]) {
 function createClient() {
   return new Firehose({
     region: "eu-west-1",
+    requestHandler: new NodeHttpHandler({
+      httpsAgent: new Agent({
+        keepAlive: true,
+      }),
+    }),
   });
 }
 
@@ -125,10 +135,7 @@ export default class FirehoseWriter {
     };
 
     try {
-      const response = await this.firehoseClient
-        .putRecordBatch(params)
-        .promise();
-
+      const response = await this.firehoseClient.putRecordBatch(params);
       this._retryFailedRecords(records, response, retry + 1);
     } catch (err) {
       this._handleGeneralFailure(records, err, retry + 1);
@@ -156,7 +163,7 @@ export default class FirehoseWriter {
 
   private async _retryFailedRecords(
     originalRecords: Uint8Array[],
-    response: Firehose.PutRecordBatchOutput,
+    response: PutRecordBatchCommandOutput,
     retry = 0
   ) {
     const failedRecords = response
