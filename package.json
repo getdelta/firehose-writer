@@ -4,6 +4,7 @@
   "version": "0.2.0",
   "repository": "https://github.com/getdelta/firehose-writer",
   "scripts": {
+    "build": "tsc",
     "test": "node_modules/mocha/bin/mocha"
   },
   "main": "lib/firehose_writer.js",
