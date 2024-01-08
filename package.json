@@ -3,8 +3,9 @@
   "license": "MIT",
   "version": "1.0.0",
   "repository": "https://github.com/getdelta/firehose-writer",
+  "main": "./src/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsc",
     "lint": "eslint --ext .ts,.js .",
     "lint:fix": "eslint --ext .ts,.js --fix .",
     "check:typescript": "tsc --noEmit --skipLibCheck --project .",
