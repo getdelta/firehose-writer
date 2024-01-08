@@ -20,6 +20,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@aws-sdk/client-firehose": "^3.485.0",
     "aws-sdk": "^2.209.0"
   }
 }
