@@ -1,7 +1,7 @@
 {
   "name": "@getdelta/firehose-writer",
   "license": "MIT",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "repository": "https://github.com/getdelta/firehose-writer",
   "scripts": {
     "build": "tsc",
