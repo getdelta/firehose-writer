@@ -35,8 +35,8 @@ function validateParam(paramName: string, condition: boolean, message: string) {
   }
 }
 
-interface Options {
-  streamName: string;
+export interface Options {
+  streamName?: string;
   maxSize?: number;
   maxCount?: number;
   maxTimeout?: number;
@@ -45,22 +45,22 @@ interface Options {
   maxBatchCount?: number;
   maxBatchSize?: number;
   firehoseClient?: any;
-  log?: any;
+  log?: ((level: string, message: string, ...params: any[]) => void) | null;
 }
 
 export default class FirehoseWriter {
-  private streamName?: string;
-  private firehoseClient: Firehose;
-  private log: any;
-  private maxSize: number;
-  private maxCount: number;
-  private maxTimeout: number;
-  private maxRetries: number;
-  private retryInterval: number;
-  private maxBatchCount: number;
-  private maxBatchSize: number;
-  private _buffer: any[];
-  private _currentSize: number;
+  public _buffer: any[];
+  public _currentSize: number;
+  public streamName?: string;
+  public firehoseClient: Firehose;
+  public maxSize: number;
+  public maxCount: number;
+  public maxTimeout: number;
+  public maxRetries: number;
+  public retryInterval: number;
+  public maxBatchCount: number;
+  public maxBatchSize: number;
+  public log: (level: string, message: string, ...params: any[]) => void;
 
   constructor(options?: Options) {
     validateParam("options", !!options, "can not be `null` or `undefined`");
@@ -108,7 +108,7 @@ export default class FirehoseWriter {
     );
   }
 
-  private async _flush() {
+  public async _flush() {
     if (!this._buffer || !this._buffer.length) {
       return;
     }
@@ -122,7 +122,7 @@ export default class FirehoseWriter {
     );
   }
 
-  private async _deliver(records: Uint8Array[], retry = 0) {
+  public async _deliver(records: Uint8Array[], retry = 0) {
     if (retry > this.maxRetries) {
       throw new Error(
         `Failed to deliver a batch of ${records.length} to firehose stream ${this.streamName} (${this.maxRetries} retries)`
@@ -189,7 +189,7 @@ export default class FirehoseWriter {
     }
   }
 
-  private _splitIntoChunks(records: Uint8Array[]) {
+  public _splitIntoChunks(records: Uint8Array[]) {
     return records.reduce(
       (acc, record) => {
         const recordSize = record.length;
